@@ -15,7 +15,7 @@ class nameBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
+      height: 80,
       width: double.infinity,
 
       //color: Colors.black,
@@ -36,7 +36,7 @@ class nameBar extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          const SizedBox(
+          SizedBox(
             height: 4,
           ),
           Text(

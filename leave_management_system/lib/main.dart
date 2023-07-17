@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: 'login',
       routes: {
-        'login': (context) => AuthPage(),
+        'login': (context) => const AuthPage(),
         // Add more routes for other pages/screens
       },
     );
