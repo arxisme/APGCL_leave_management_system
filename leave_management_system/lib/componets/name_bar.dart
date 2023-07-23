@@ -25,21 +25,21 @@ class nameBar extends StatelessWidget {
         color: Colors.black,
       ),
       padding: const EdgeInsets.all(15),
-      child: const Column(
+      child:  Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Arshad Ahmed',
-            style: TextStyle(
+            name,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 4,
           ),
-          Text(
+          const Text(
             'CJ1001',
             style: TextStyle(
               fontSize: 13,

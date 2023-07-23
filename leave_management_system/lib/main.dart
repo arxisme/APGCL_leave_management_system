@@ -4,6 +4,7 @@ import 'package:leave_management_system/auth_page.dart';
 // import 'package:leave_management_system/homePage.dart';
 // import 'package:leave_management_system/login_page.dart';
 import 'firebase_options.dart';
+//import 'package:firebase_database/firebase_database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
