@@ -2,17 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:leave_management_system/action_page.dart';
 import 'package:leave_management_system/auth_page.dart';
-import 'package:leave_management_system/componets/button.dart';
-import 'package:leave_management_system/componets/my_button.dart';
 
-import 'package:leave_management_system/componets/no_field.dart';
 import 'package:leave_management_system/home_page.dart';
 
 import 'package:leave_management_system/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:leave_management_system/profile_page.dart';
-import 'package:open_file/open_file.dart';
 
 Future getAppliactions() async {
   List items = [];
@@ -20,13 +15,12 @@ Future getAppliactions() async {
       FirebaseFirestore.instance.collection('Applications');
   try {
     await applications.get().then((value) {
-      value.docs.forEach((element) {
+      for (var element in value.docs) {
         items.add(element.data());
-      });
+      }
     });
     return items;
   } catch (e) {
-    print(e.toString());
     return null;
   }
 }
@@ -75,7 +69,6 @@ Future<String?> getData() async {
     userMail = (FirebaseAuth.instance.currentUser?.email)!;
     userName = (FirebaseAuth.instance.currentUser?.displayName)!;
 
-    final db = FirebaseFirestore.instance;
 
     return FirebaseAuth.instance.currentUser?.email;
   } else {
@@ -91,7 +84,7 @@ void _onPopupMenuSelected(String value, BuildContext context) {
       // Navigate to the ProfilePage
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ProfilePage()),
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
       );
       break;
     case 'Home':
@@ -133,11 +126,8 @@ class _ApproverPage extends State<ApproverPage> {
     if (result != null) {
       setState(() {
         applicationList = result;
-        print(applicationList.toString());
-        print('\n $userName');
       });
     } else {
-      print('unable to retrieve');
     }
   }
 
@@ -221,20 +211,19 @@ class _ApproverPage extends State<ApproverPage> {
                         height: MediaQuery.of(context).size.height - 60,
                         child: ListView.builder(
                           itemCount: applicationList.length,
-                          itemBuilder: (context, Index) {
+                          itemBuilder: (context, index) {
                             // print(applicationList[Index]['approver']
                             //     .toString());
 
-                            if (applicationList[Index]['approver'].toString() ==
+                            if (applicationList[index]['approver'].toString() ==
                                     userName &&
-                                applicationList[Index]['status'] == 'pending') {
-                              mail = applicationList[Index]['status'];
-                              int i = Index;
+                                applicationList[index]['status'] == 'pending') {
+                              mail = applicationList[index]['status'];
+                              int i = index;
                               return Card(
                                 color: const Color(0XFFD2DAFF),
                                 child: ListTile(
                                   onTap: () {
-                                    print(applicationList[i]['email']);
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -243,15 +232,15 @@ class _ApproverPage extends State<ApproverPage> {
                                       ),
                                     );
                                   },
-                                  title: Text(applicationList[Index]['name']),
+                                  title: Text(applicationList[index]['name']),
                                   subtitle: Text(
-                                      applicationList[Index]['leave Type']),
+                                      applicationList[index]['leave Type']),
                                   trailing: Text(
-                                      applicationList[Index]['no of days']),
+                                      applicationList[index]['no of days']),
                                 ),
                               );
                             } else {
-                              return Card();
+                              return const Card();
                             }
                           },
                         ),

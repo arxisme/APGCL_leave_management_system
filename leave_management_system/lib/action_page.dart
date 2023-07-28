@@ -1,20 +1,13 @@
-import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:leave_management_system/approver_page.dart';
-import 'package:leave_management_system/auth_page.dart';
-import 'package:leave_management_system/componets/button.dart';
-import 'package:leave_management_system/componets/my_button.dart';
 
-import 'package:leave_management_system/componets/no_field.dart';
 import 'package:leave_management_system/home_page.dart';
 
 import 'package:leave_management_system/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:leave_management_system/profile_page.dart';
-import 'package:open_file/open_file.dart';
 
 final List<PopupMenuItem<String>> _popupItems = [
   const PopupMenuItem<String>(
@@ -52,13 +45,12 @@ Future getAppliactions() async {
       FirebaseFirestore.instance.collection('Applications');
   try {
     await applications.get().then((value) {
-      value.docs.forEach((element) {
+      for (var element in value.docs) {
         items.add(element.data());
-      });
+      }
     });
     return items;
   } catch (e) {
-    print(e.toString());
     return null;
   }
 }
@@ -75,7 +67,6 @@ Future<String?> getData() async {
     mail = (FirebaseAuth.instance.currentUser?.email)!;
     userName = (FirebaseAuth.instance.currentUser?.displayName)!;
 
-    final db = FirebaseFirestore.instance;
 
     return FirebaseAuth.instance.currentUser?.email;
   } else {
@@ -125,10 +116,9 @@ class _ActionPage extends State<ActionPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
+   
     super.initState();
     fetchApplications();
-    print(mail);
   }
 
   fetchApplications() async {
@@ -136,10 +126,8 @@ class _ActionPage extends State<ActionPage> {
     if (result != null) {
       setState(() {
         applicationList = result;
-        print(applicationList.toString());
       });
     } else {
-      print('unable to retrieve');
     }
   }
 
@@ -214,16 +202,15 @@ class _ActionPage extends State<ActionPage> {
                       height: MediaQuery.of(context).size.height - 60,
                       child: ListView.builder(
                         itemCount: applicationList.length,
-                        itemBuilder: (context, Index) {
+                        itemBuilder: (context, index) {
                           // print(applicationList[Index]['approver']
                           //     .toString());
 
-                          if (applicationList[Index]['approver'].toString() ==
+                          if (applicationList[index]['approver'].toString() ==
                                   userName &&
-                              applicationList[Index]['status'] == 'pending' &&
-                              applicationList[Index]['email'].toString().trim() == rmail) {
-                            editIndex = Index;
-                            print('lolol');
+                              applicationList[index]['status'] == 'pending' &&
+                              applicationList[index]['email'].toString().trim() == rmail) {
+                            editIndex = index;
                             return Card(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20)),
@@ -234,11 +221,11 @@ class _ActionPage extends State<ActionPage> {
                                   children: [
                                     ListTile(
                                       title:
-                                          Text(applicationList[Index]['name']),
+                                          Text(applicationList[index]['name']),
                                       subtitle: Text(
-                                          applicationList[Index]['leave Type']),
+                                          applicationList[index]['leave Type']),
                                       trailing: Text(
-                                          applicationList[Index]['no of days']),
+                                          applicationList[index]['no of days']),
                                     ),
                                     const SizedBox(
                                       height: 20,
@@ -256,7 +243,7 @@ class _ActionPage extends State<ActionPage> {
                                               ),
                                             ),
                                             Text(
-                                              applicationList[Index]
+                                              applicationList[index]
                                                   ['start date'].toDate().toString().substring(0,10),
                                             ),
                                           ],
@@ -270,7 +257,7 @@ class _ActionPage extends State<ActionPage> {
                                               ),
                                             ),
                                             Text(
-                                              applicationList[Index]
+                                              applicationList[index]
                                                   ['end date'].toDate().toString().substring(0,10),
                                             ),
                                           ],
@@ -309,13 +296,13 @@ class _ActionPage extends State<ActionPage> {
                                             readOnly:
                                                 true, // Set to true if you want the text to be non-editable
                                             controller: TextEditingController(
-                                                text: applicationList[Index]
+                                                text: applicationList[index]
                                                     ['note']),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       height: 20,
                                     ),
                                     Row(
@@ -329,7 +316,6 @@ class _ActionPage extends State<ActionPage> {
                                               borderRadius:
                                                   BorderRadius.circular(15)),
                                           onPressed: () {
-                                            print(' lllll$rmail \n');
                                             // Replace "collectionName" with the actual name of your Firestore collection
                                             // Replace "documentId" with the ID of the document you want to update
                                             FirebaseFirestore.instance
@@ -340,8 +326,6 @@ class _ActionPage extends State<ActionPage> {
                                                   'reschedule', // Replace "fieldName" with the field you want to update
                                             }).then((_) {
                                               // Success, do something if needed
-                                              print(
-                                                  'Value updated in Firestore!');
                                               Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -349,8 +333,6 @@ class _ActionPage extends State<ActionPage> {
                                                           const ApproverPage()));
                                             }).catchError((error) {
                                               // Handle any errors that occurred during the update process
-                                              print(
-                                                  'Error updating value:$rmail $error');
                                             });
                                           },
                                           color: const Color.fromARGB(
@@ -378,8 +360,6 @@ class _ActionPage extends State<ActionPage> {
                                                   'approved', // Replace "fieldName" with the field you want to update
                                             }).then((_) {
                                               // Success, do something if needed
-                                              print(
-                                                  'Value updated in Firestore!');
                                               Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -387,11 +367,9 @@ class _ActionPage extends State<ActionPage> {
                                                           const ApproverPage()));
                                             }).catchError((error) {
                                               // Handle any errors that occurred during the update process
-                                              print(
-                                                  'Error updating value: $error');
                                             });
                                           },
-                                          color: Color.fromARGB(
+                                          color: const Color.fromARGB(
                                               202, 166, 255, 125),
                                           child: const Text(
                                             'Approve',
@@ -417,8 +395,6 @@ class _ActionPage extends State<ActionPage> {
                                                   'rejected', // Replace "fieldName" with the field you want to update
                                             }).then((_) {
                                               // Success, do something if needed
-                                              print(
-                                                  'Value updated in Firestore!');
                                               Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -426,12 +402,10 @@ class _ActionPage extends State<ActionPage> {
                                                           const ApproverPage()));
                                             }).catchError((error) {
                                               // Handle any errors that occurred during the update process
-                                              print(
-                                                  'Error updating value: $error');
                                             });
                                           },
                                           color:
-                                              Color.fromARGB(160, 248, 77, 90),
+                                              const Color.fromARGB(160, 248, 77, 90),
                                           child: const Text(
                                             'Reject',
                                             style: TextStyle(

@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 //import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:leave_management_system/componets/button.dart';
+import 'package:leave_management_system/registration_page.dart';
 import 'componets/textfields.dart';
 
 class LoginPage extends StatelessWidget {
@@ -10,10 +12,12 @@ class LoginPage extends StatelessWidget {
   final passwordConctroller = TextEditingController();
 
   void signUserIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: emailController.text,
-      password: passwordConctroller.text,
-    );
+    
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordConctroller.text,
+      );
+  
   }
 
   @override
@@ -22,11 +26,11 @@ class LoginPage extends StatelessWidget {
       backgroundColor: Colors.grey[300],
       body: SafeArea(
         child: Center(
-          child: Column(
+          child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child:Column(
             children: [
-              const SizedBox(
-                height: 100,
-              ),
+    
               Image.asset(
                 "lib/images/apgcl-1.png",
                 height: 150,
@@ -65,9 +69,37 @@ class LoginPage extends StatelessWidget {
                 onTap: signUserIn,
                 name: 'Sign in',
               ),
+              const SizedBox(
+                height: 20,
+              ),
+               RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    decoration: TextDecoration.underline,
+                    fontSize: 18,
+                    color: Color.fromARGB(255, 93, 175, 241),
+                  ),
+                  children: <TextSpan>[
+                    TextSpan(
+                        text: 'Register',
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => RegistrationPage()),
+                            );
+                          },
+                        style: const TextStyle(
+                          color: Colors.blue,
+                        )),
+                  ],
+                ),
+              
+              ),
             ],
           ),
-        ),
+        ),),
       ),
     );
   }

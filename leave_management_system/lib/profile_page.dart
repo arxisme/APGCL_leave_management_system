@@ -5,19 +5,22 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:leave_management_system/approver_page.dart';
 import 'package:leave_management_system/auth_page.dart';
-import 'package:leave_management_system/componets/button.dart';
-import 'package:leave_management_system/componets/my_button.dart';
 
-import 'package:leave_management_system/componets/no_field.dart';
 import 'package:leave_management_system/home_page.dart';
 
 import 'package:leave_management_system/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:open_file/open_file.dart';
 import 'package:firebase_database/firebase_database.dart';
 
-String status = '';
+String ref = '0';
+dynamic currentApplication = {
+  'leave Type': 'not available',
+  'start date': Timestamp.fromDate(DateTime.now()),
+  'end date': Timestamp.fromDate(DateTime.now()),
+  'no of days': '0',
+  'approver': 'not available',
+  'status': 'No active application',
+};
 //topbar variables
 final List<PopupMenuItem<String>> _popupItems = [
   const PopupMenuItem<String>(
@@ -108,20 +111,37 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePage extends State<ProfilePage> {
   reallyGetStatus() {
-    getStatus().then((value) {
+    getAppliaction().then((value) {
       setState(() {
-        status = value;
+        currentApplication = value;
       });
     });
   }
 
-  final ref = getFirebaseDatabaseUser();
+  reallyGetUserData() {
+    getFirebaseDatabaseUser().then((value) {
+      setState(() {
+        ref = value;
+      });
+    });
+  }
 
+  cancelApplication() async {
+    await FirebaseFirestore.instance
+        .collection('Applications')
+        .doc(userMail)
+        .update({'status': 'cancelled'});
+    reallyGetStatus();
+  }
+
+  // dynamic ref = FirebaseDatabase.instance.ref('employee').child('0');
   @override
   void initState() {
     super.initState();
     reallyGetStatus();
-    getFirebaseDatabaseUser();
+    reallyGetUserData();
+
+    // getFirebaseDatabaseUser();
 
     getData();
   }
@@ -146,8 +166,7 @@ class _ProfilePage extends State<ProfilePage> {
                       //   "lib/images/apgcl-1.png",
                       //   height: 90,
                       // ),
-                      //tobar
-
+                      //t
                       SizedBox(
                         width: MediaQuery.of(context).size.width,
                         child: Row(
@@ -199,43 +218,184 @@ class _ProfilePage extends State<ProfilePage> {
                           ],
                         ),
                       ),
+
                       const SizedBox(
                         height: 10,
                       ),
+                      // Card(
+                      //   color: const Color(0XFFD2DAFF),
+                      //   shape: RoundedRectangleBorder(
+                      //       borderRadius: BorderRadius.circular(15)),
+                      //   elevation: 5,
+                      //   child: CustomListTile(
+                      //     leading: 'Previous Application Status',
+                      //     title: currentApplication['status'],
+                      //   ),
+                      // ),
                       Card(
                         color: const Color(0XFFD2DAFF),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)),
-                        elevation: 5,
-                        child: CustomListTile(
-                          leading: 'Previous Application Status',
-                          title: status,
+                            borderRadius: BorderRadiusDirectional.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              _buildAttributeRow(
+                                  'Leave Type',
+                                  currentApplication['leave Type'],
+                                  Colors.black),
+                              _buildAttributeRow(
+                                  'Start Date',
+                                  currentApplication['start date']
+                                      .toDate()
+                                      .toString()
+                                      .substring(0, 10),
+                                  Colors.black),
+                              _buildAttributeRow(
+                                  'End Date',
+                                  currentApplication['end date']
+                                      .toDate()
+                                      .toString()
+                                      .substring(0, 10),
+                                  Colors.black),
+                              _buildAttributeRow(
+                                  'Number of Days',
+                                  currentApplication['no of days'],
+                                  Colors.black),
+                              _buildAttributeRow('Approver',
+                                  currentApplication['approver'], Colors.black),
+                              _buildAttributeRow(
+                                  'Status',
+                                  currentApplication['status'],
+                                  Color.fromARGB(255, 3, 124, 29)),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Center(
+                                    child: MaterialButton(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15)),
+                                        color: const Color.fromARGB(
+                                            255, 137, 177, 247),
+                                        child:
+                                            Text('View previous Applications'),
+                                        onPressed: () {}),
+                                  ),
+                                  Center(
+                                    child: MaterialButton(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15)),
+                                        color: Color.fromARGB(255, 255, 90, 90),
+                                        child: Text('cancel'),
+                                        onPressed: () {
+                                          if (currentApplication['status'] ==
+                                                  'pending' &&
+                                              DateTime.now().isBefore(
+                                                  currentApplication[
+                                                          'start date']
+                                                      .toDate())) {
+                                            cancelApplication();
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Alert!"),
+                                                  content: Text(
+                                                      'Application  cancelled'),
+                                                  actions: <Widget>[
+                                                    Center(
+                                                      child: ElevatedButton(
+                                                        child: const Text("OK"),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
+                                          if (currentApplication['status'] ==
+                                              'cancelled') {
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text("Alert!"),
+                                                  content: Text(
+                                                      'Application already cancelled'),
+                                                  actions: <Widget>[
+                                                    Center(
+                                                      child: ElevatedButton(
+                                                        child: const Text("OK"),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
+                                        }),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       SizedBox(
-                        height: MediaQuery.of(context).size.height - 100,
-                        child: Expanded(
-                          child: FirebaseAnimatedList(
-                              query: ref,
-                              itemBuilder:
-                                  (context, snapshot, animation, index) {
-                                if (index < 7) {
-                                  return Card(
-                                    color: const Color(0XFFD2DAFF),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(15)),
-                                    elevation: 5,
-                                    child: CustomListTile(
-                                        leading: ' ${snapshot.key}:',
-                                        title: snapshot.value.toString()),
-                                  );
-                                } else {
-                                  return Card();
-                                }
-                              }),
-                        ),
+                        height: 500,
+                        child: FirebaseAnimatedList(
+                            query:
+                                FirebaseDatabase.instance.ref("employee/$ref"),
+                            itemBuilder: (context, snapshot, animation, index) {
+                              if (index < 7) {
+                                return Card(
+                                  shadowColor: Color.fromARGB(0, 5, 5, 5),
+                                  color: const Color(0XFFD2DAFF),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15)),
+                                  elevation: 5,
+                                  child: CustomListTile(
+                                      leading: ' ${snapshot.key}:',
+                                      title: snapshot.value.toString()),
+                                );
+                              } else {
+                                return Card();
+                              }
+                            }),
                       ),
+
+                      // FirebaseAnimatedList(
+                      //     query: FirebaseDatabase.instance.ref("employee/$ref"),
+                      //     itemBuilder: (context, snapshot, animation, index) {
+                      //       // if (index < 7) {
+                      //       return Card(
+                      //         color: const Color(0XFFD2DAFF),
+                      //         shape: RoundedRectangleBorder(
+                      //             borderRadius: BorderRadius.circular(15)),
+                      //         elevation: 5,
+                      //         child: CustomListTile(
+                      //             leading: ' ${snapshot.key}:',
+                      //             title: snapshot.value.toString()),
+                      //       );
+                      //       // } else {
+                      //       //   return const Card();
+                      //       // }
+                      //     }),
                     ],
                   ),
                 )
@@ -269,7 +429,7 @@ class CustomListTile extends StatelessWidget {
             leading,
             style: const TextStyle(
               color: Color.fromARGB(255, 0, 0, 0),
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -281,7 +441,7 @@ class CustomListTile extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -293,17 +453,19 @@ class CustomListTile extends StatelessWidget {
   }
 }
 
-Future<String> getStatus() async {
+Future<Object?> getAppliaction() async {
   QuerySnapshot snapshot =
       await FirebaseFirestore.instance.collection('Applications').get();
 
   for (var element in snapshot.docs) {
     if (FirebaseAuth.instance.currentUser?.email == element.get('email')) {
-      return element.get('status');
-    }
+      print(element.data());
+
+      return element.data();
+    } else {}
   }
 
-  return 'no active application'; // Return this if the user's email is not found in any document
+  return currentApplication; // Return this if the user's email is not found in any document
 }
 
 getFirebaseDatabaseUser() async {
@@ -312,9 +474,50 @@ getFirebaseDatabaseUser() async {
   for (var element in snapshot.children) {
     if (element.child('email').value.toString() ==
         FirebaseAuth.instance.currentUser?.email) {
-      return element;
+      print(element.key);
+
+      return element.key;
     }
   }
 
   // print(names);
+}
+
+//  getFirebaseDatabaseUser() {
+//   return FirebaseDatabase.instance
+//       .ref()
+//       .child('employee')
+//       .orderByChild('email')
+//       .equalTo(FirebaseAuth.instance.currentUser?.email ?? '')
+//       .limitToFirst(1
+
+Widget _buildAttributeRow(String attribute, String value, Color _color) {
+  return Column(
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            attribute + ':',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          SizedBox(width: 16.0),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: _color,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(
+        height: 10,
+      )
+    ],
+  );
 }

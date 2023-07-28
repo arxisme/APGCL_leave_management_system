@@ -2,6 +2,8 @@
 
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:leave_management_system/approver_page.dart';
@@ -129,9 +131,7 @@ Future<String?> getData() async {
   if (FirebaseAuth.instance.currentUser != null) {
     userMail = (FirebaseAuth.instance.currentUser?.email)!;
     userName = (FirebaseAuth.instance.currentUser?.displayName)!;
-    print(userName);
     employeeNames = await getFirebaseDatabase();
-    print(employeeNames);
 
     return FirebaseAuth.instance.currentUser?.email;
   } else {
@@ -165,7 +165,6 @@ class _HomePage extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    print(employeeNames);
     getData();
 
     return Scaffold(
@@ -566,20 +565,20 @@ class _HomePage extends State<HomePage> {
                       onTap: () {
                         if (dropdownValue == 'Earned Leave') {
                           if (startDate!.isBefore(
-                              DateTime.now().add(const Duration(days: 20)))) {
+                              DateTime.now().add(const Duration(days: 21)))) {
                             showDialog(
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
                                   title: const Text(
                                     "Invalid Start Date",
-                                    style: const TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey),
                                   ),
                                   content: const Text(
-                                      "To avail your earned leave, you have to apply before 20 days "),
+                                      "To avail your earned leave, you have to apply before 21 days "),
                                   actions: <Widget>[
                                     ElevatedButton(
-                                      child: new Text("OK"),
+                                      child: const Text("OK"),
                                       onPressed: () {
                                         Navigator.of(context).pop();
                                       },
@@ -591,6 +590,9 @@ class _HomePage extends State<HomePage> {
                           } else {
                             createApplication();
                           }
+                        }
+                        {
+                          createApplication();
                         }
                       },
                       //createApplication,
@@ -639,8 +641,6 @@ class _HomePage extends State<HomePage> {
   Future createApplication() async {
     final db =
         FirebaseFirestore.instance.collection('Applications').doc(userMail);
-    print(approverController.text);
-   await FirebaseAuth.instance.currentUser?.updateDisplayName('Arshad Ahmed');
 
     final json = {
       "leave Type": dropdownValue,
@@ -703,13 +703,22 @@ class _HomePage extends State<HomePage> {
         },
       );
     }
-  }
+    if (file != null) {
+      try {
+        final uploadFile = File(file!.path!);
+        final path = '${userMail}/${strStartDate}';
+        final ref = FirebaseStorage.instance.ref().child(path);
 
-  onTapMenu() {}
-
-  void openFile(PlatformFile file) {
-    OpenFile.open(file.path!);
+        ref.putFile(uploadFile);
+      } catch (e) {}
+    }
   }
+}
+
+onTapMenu() {}
+
+void openFile(PlatformFile file) {
+  OpenFile.open(file.path!);
 }
 
 Future<List<String>> getFirebaseDatabase() async {
