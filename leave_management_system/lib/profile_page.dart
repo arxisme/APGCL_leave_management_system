@@ -7,6 +7,7 @@ import 'package:leave_management_system/approver_page.dart';
 import 'package:leave_management_system/auth_page.dart';
 
 import 'package:leave_management_system/home_page.dart';
+import 'package:leave_management_system/leave_history_page.dart';
 
 import 'package:leave_management_system/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -284,8 +285,15 @@ class _ProfilePage extends State<ProfilePage> {
                                         color: const Color.fromARGB(
                                             255, 137, 177, 247),
                                         child:
-                                            Text('View previous Applications'),
-                                        onPressed: () {}),
+                                            Text('View all applications'),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const LeaveApplicationsPage()),
+                                          );
+                                        }),
                                   ),
                                   Center(
                                     child: MaterialButton(

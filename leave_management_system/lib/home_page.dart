@@ -1,8 +1,5 @@
-// ignore: file_names
-
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:io';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -241,7 +238,7 @@ class _HomePage extends State<HomePage> {
                     const SizedBox(
                       height: 20,
                     ),
-                    // const nameBar(name: "arshad", id: "cj001"),
+
                     // const SizedBox(height: 30),
 
                     // const SizedBox(
@@ -639,8 +636,36 @@ class _HomePage extends State<HomePage> {
 //   }
 // }
   Future createApplication() async {
+    dynamic data;
+    String status = '';
+    print('check..');
     final db =
         FirebaseFirestore.instance.collection('Applications').doc(userMail);
+    var doc = await db.get();
+    if (doc.exists) {
+      await FirebaseFirestore.instance
+          .collection('Applications')
+          .doc(userMail)
+          .get()
+          .then((value) {
+        status = value.get('status');
+      });
+
+      if (status == 'pending') {
+        FirebaseFirestore.instance
+            .collection('Applications')
+            .doc(userMail)
+            .update({'status': 'cancelled'});
+      }
+      await db.get().then((value) {
+        data = value.data() as Map<String, dynamic>;
+      });
+      await FirebaseFirestore.instance
+          .collection('employee')
+          .doc(userMail)
+          .collection('Applications')
+          .add(data);
+    }
 
     final json = {
       "leave Type": dropdownValue,
@@ -662,16 +687,22 @@ class _HomePage extends State<HomePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             title: const Text(
-              "Congratulations",
+              "Alert!",
               style: TextStyle(
-                color: Colors.grey,
+                color: Color.fromARGB(255, 39, 120, 185),
               ),
             ),
             content: const Text("Application submitted"),
             actions: <Widget>[
               Center(
                 child: ElevatedButton(
+                  style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15))),
+                  ),
                   child: const Text("OK"),
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -687,12 +718,18 @@ class _HomePage extends State<HomePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             title: const Text("Error uploading application"),
             content: Text(e.toString()),
             actions: <Widget>[
               Center(
                 child: ElevatedButton(
                   child: const Text("OK"),
+                  style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15))),
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -703,6 +740,7 @@ class _HomePage extends State<HomePage> {
         },
       );
     }
+
     if (file != null) {
       try {
         final uploadFile = File(file!.path!);
