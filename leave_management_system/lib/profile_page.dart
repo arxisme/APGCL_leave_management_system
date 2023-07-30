@@ -284,8 +284,7 @@ class _ProfilePage extends State<ProfilePage> {
                                                 BorderRadius.circular(15)),
                                         color: const Color.fromARGB(
                                             255, 137, 177, 247),
-                                        child:
-                                            Text('View all applications'),
+                                        child: Text('View all applications'),
                                         onPressed: () {
                                           Navigator.push(
                                             context,
@@ -303,6 +302,8 @@ class _ProfilePage extends State<ProfilePage> {
                                         color: Color.fromARGB(255, 255, 90, 90),
                                         child: Text('cancel'),
                                         onPressed: () {
+                                          print('hhhhhhhhhhh');
+
                                           if (currentApplication['status'] ==
                                                   'pending' &&
                                               DateTime.now().isBefore(
@@ -311,9 +312,14 @@ class _ProfilePage extends State<ProfilePage> {
                                                       .toDate())) {
                                             cancelApplication();
                                             showDialog(
+                                              
                                               context: context,
                                               builder: (BuildContext context) {
                                                 return AlertDialog(
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15)),
                                                   title: const Text("Alert!"),
                                                   content: Text(
                                                       'Application  cancelled'),
@@ -338,6 +344,10 @@ class _ProfilePage extends State<ProfilePage> {
                                               context: context,
                                               builder: (BuildContext context) {
                                                 return AlertDialog(
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15)),
                                                   title: const Text("Alert!"),
                                                   content: Text(
                                                       'Application already cancelled'),
@@ -345,6 +355,43 @@ class _ProfilePage extends State<ProfilePage> {
                                                     Center(
                                                       child: ElevatedButton(
                                                         child: const Text("OK"),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          }
+                                          if (!DateTime.now().isBefore(
+                                              currentApplication['start date']
+                                                  .toDate())) {
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15)),
+                                                  title: const Text(
+                                                      "Alert!"),
+                                                  content: Text("Can't cancel"),
+                                                  actions: <Widget>[
+                                                    Center(
+                                                      child: ElevatedButton(
+                                                        child: const Text("OK"),
+                                                        style: ButtonStyle(
+                                                          shape: MaterialStatePropertyAll(
+                                                              RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              15))),
+                                                        ),
                                                         onPressed: () {
                                                           Navigator.of(context)
                                                               .pop();

@@ -50,7 +50,7 @@ class RegistrationPage extends StatelessWidget {
                 myTextField(
                   controller: userNameController,
                   hintText: 'Name',
-                  obscureText: true,
+                  obscureText: false,
                 ),
                 const SizedBox(
                   height: 25,

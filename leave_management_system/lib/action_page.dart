@@ -1,5 +1,7 @@
+import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:leave_management_system/approver_page.dart';
 
@@ -67,7 +69,6 @@ Future<String?> getData() async {
     mail = (FirebaseAuth.instance.currentUser?.email)!;
     userName = (FirebaseAuth.instance.currentUser?.displayName)!;
 
-
     return FirebaseAuth.instance.currentUser?.email;
   } else {
     return null;
@@ -116,7 +117,6 @@ class _ActionPage extends State<ActionPage> {
 
   @override
   void initState() {
-   
     super.initState();
     fetchApplications();
   }
@@ -127,8 +127,7 @@ class _ActionPage extends State<ActionPage> {
       setState(() {
         applicationList = result;
       });
-    } else {
-    }
+    } else {}
   }
 
   @override
@@ -209,7 +208,10 @@ class _ActionPage extends State<ActionPage> {
                           if (applicationList[index]['approver'].toString() ==
                                   userName &&
                               applicationList[index]['status'] == 'pending' &&
-                              applicationList[index]['email'].toString().trim() == rmail) {
+                              applicationList[index]['email']
+                                      .toString()
+                                      .trim() ==
+                                  rmail) {
                             editIndex = index;
                             return Card(
                               shape: RoundedRectangleBorder(
@@ -244,7 +246,10 @@ class _ActionPage extends State<ActionPage> {
                                             ),
                                             Text(
                                               applicationList[index]
-                                                  ['start date'].toDate().toString().substring(0,10),
+                                                      ['start date']
+                                                  .toDate()
+                                                  .toString()
+                                                  .substring(0, 10),
                                             ),
                                           ],
                                         ),
@@ -257,8 +262,10 @@ class _ActionPage extends State<ActionPage> {
                                               ),
                                             ),
                                             Text(
-                                              applicationList[index]
-                                                  ['end date'].toDate().toString().substring(0,10),
+                                              applicationList[index]['end date']
+                                                  .toDate()
+                                                  .toString()
+                                                  .substring(0, 10),
                                             ),
                                           ],
                                         )
@@ -349,7 +356,70 @@ class _ActionPage extends State<ActionPage> {
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(15)),
-                                          onPressed: () {
+                                          onPressed: () async {
+                                            final snapshot =
+                                                await FirebaseDatabase.instance
+                                                    .ref('employee')
+                                                    .get();
+                                            String key = '1';
+
+                                            for (var element
+                                                in snapshot.children) {
+                                              if (element
+                                                      .child('email')
+                                                      .value
+                                                      .toString() ==
+                                                  applicationList[index]
+                                                      ['email']) {
+                                                key = element.key!;
+                                                DatabaseReference dref =
+                                                    FirebaseDatabase.instance
+                                                        .ref('employee/$key');
+                                                String ff;
+                                                int i = 0;
+                                                int available;
+                                                int new_available_days = 0;
+                                                int no_of_days = int.parse(
+                                                    applicationList[index]
+                                                        ['no of days']);
+
+                                                dref.onValue.listen((event) {
+                                                  ff = event.snapshot
+                                                      .child(
+                                                          applicationList[index]
+                                                              ['leave Type'])
+                                                      .value
+                                                      .toString();
+                                                  available = int.parse(ff);
+
+                                                  new_available_days =
+                                                      available - no_of_days;
+                                                  if (i == 0) {
+                                                    dref.update({
+                                                      applicationList[index]
+                                                              ['leave Type']:
+                                                          new_available_days
+                                                    });
+                                                    if (applicationList[index]
+                                                            ['leave Type'] ==
+                                                        'Earned Leave') {
+                                                      dref.update({
+                                                        'Earned Leave on Medical Ground': new_available_days
+                                                      });
+                                                    }
+                                                     if (applicationList[index]
+                                                            ['leave Type'] ==
+                                                        'Earned Leave on Medical Ground') {
+                                                      dref.update({
+                                                        'Earned Leave': new_available_days
+                                                      });
+                                                    }
+                                                    i++;
+                                                  }
+                                                });
+                                              }
+                                            }
+
                                             // Replace "collectionName" with the actual name of your Firestore collection
                                             // Replace "documentId" with the ID of the document you want to update
                                             FirebaseFirestore.instance
@@ -385,8 +455,6 @@ class _ActionPage extends State<ActionPage> {
                                               borderRadius:
                                                   BorderRadius.circular(15)),
                                           onPressed: () {
-                                            // Replace "collectionName" with the actual name of your Firestore collection
-                                            // Replace "documentId" with the ID of the document you want to update
                                             FirebaseFirestore.instance
                                                 .collection('Applications')
                                                 .doc(rmail)
@@ -404,8 +472,8 @@ class _ActionPage extends State<ActionPage> {
                                               // Handle any errors that occurred during the update process
                                             });
                                           },
-                                          color:
-                                              const Color.fromARGB(160, 248, 77, 90),
+                                          color: const Color.fromARGB(
+                                              160, 248, 77, 90),
                                           child: const Text(
                                             'Reject',
                                             style: TextStyle(

@@ -585,11 +585,11 @@ class _HomePage extends State<HomePage> {
                               },
                             );
                           } else {
-                            createApplication();
+                            tryCreate();
                           }
                         }
                         {
-                          createApplication();
+                          tryCreate();
                         }
                       },
                       //createApplication,
@@ -635,10 +635,66 @@ class _HomePage extends State<HomePage> {
 //     await employeeref.add(application);
 //   }
 // }
+  Future tryCreate() async {
+    final snapshot = await FirebaseDatabase.instance.ref('employee').get();
+
+    String? key;
+    String ff;
+
+    for (var element in snapshot.children) {
+      if (element.child('email').value.toString() ==
+          FirebaseAuth.instance.currentUser?.email) {
+        print(element.key);
+
+        key = element.key;
+      }
+    }
+    DatabaseReference dref = FirebaseDatabase.instance.ref('employee/$key');
+    dref.onValue.listen((event) {
+      ff = event.snapshot.child(dropdownValue).value.toString();
+
+      var available = int.parse(ff);
+      if (int.parse(noOfDaysController.text) > available) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              title: const Text(
+                "Alert!",
+                style: TextStyle(
+                  color: Color.fromARGB(255, 39, 120, 185),
+                ),
+              ),
+              content: const Text("Not enough leave available"),
+              actions: <Widget>[
+                Center(
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15))),
+                    ),
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        createApplication();
+      }
+    });
+  }
+
   Future createApplication() async {
     dynamic data;
     String status = '';
-    print('check..');
+
     final db =
         FirebaseFirestore.instance.collection('Applications').doc(userMail);
     var doc = await db.get();
