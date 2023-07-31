@@ -430,7 +430,7 @@ class _ActionPage extends State<ActionPage> {
                                                   'approved', // Replace "fieldName" with the field you want to update
                                             }).then((_) {
                                               // Success, do something if needed
-                                              Navigator.push(
+                                              Navigator.pushReplacement(
                                                   context,
                                                   MaterialPageRoute(
                                                       builder: (context) =>
@@ -463,7 +463,7 @@ class _ActionPage extends State<ActionPage> {
                                                   'rejected', // Replace "fieldName" with the field you want to update
                                             }).then((_) {
                                               // Success, do something if needed
-                                              Navigator.push(
+                                              Navigator.pushReplacement(
                                                   context,
                                                   MaterialPageRoute(
                                                       builder: (context) =>

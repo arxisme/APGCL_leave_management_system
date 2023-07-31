@@ -22,9 +22,11 @@ const primaryColor = Color.fromARGB(255, 41, 41, 41);
 const secondaryColor = Color.fromARGB(255, 41, 41, 41);
 const accentColor = Color.fromARGB(0, 255, 206, 206);
 const errorColor = Color(0xffEF4444);
-
+String? key;
+int available = 0;
+String ff = '';
 PlatformFile? file;
-
+int kill = 0;
 String strStartDate = '';
 String strEndDate = '';
 DateTime? startDate = DateTime.now();
@@ -80,6 +82,7 @@ final List<PopupMenuItem<String>> _popupItems = [
   ),
   // Add more options as needed
 ];
+
 // void _onPopupMenuSelected(String value) {
 //   // Implement actions based on the selected option
 //   print('Selected: $value');
@@ -158,6 +161,18 @@ class _HomePage extends State<HomePage> {
   void initState() {
     super.initState();
     getData();
+    getAvailableDays();
+  }
+
+  getAvailableDays() async {
+    dynamic result = await tryCreate();
+    if (result != null) {
+      setState(() {
+        available = result;
+        print('jjjjjjjjjjjj');
+        print(available);
+      });
+    } else {}
   }
 
   @override
@@ -560,38 +575,91 @@ class _HomePage extends State<HomePage> {
                     MyButton(
                       name: 'Apply',
                       onTap: () {
-                        if (dropdownValue == 'Earned Leave') {
-                          if (startDate!.isBefore(
-                              DateTime.now().add(const Duration(days: 21)))) {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text(
-                                    "Invalid Start Date",
-                                    style: TextStyle(color: Colors.grey),
+                        print(noOfDaysController.text);
+                        print(available);
+                         if(endDate!.isBefore(startDate!)){showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text(
+                                  "Invalid end date",
+                                  style: TextStyle(
+                                      color: Color.fromARGB(255, 55, 145, 197)),
+                                ),
+                                content: const Text("Select proper end date"),
+                                actions: <Widget>[
+                                  ElevatedButton(
+                                    child: const Text("OK"),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
                                   ),
-                                  content: const Text(
-                                      "To avail your earned leave, you have to apply before 21 days "),
-                                  actions: <Widget>[
-                                    ElevatedButton(
-                                      child: const Text("OK"),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          } else {
-                            tryCreate();
+                                ],
+                              );
+                            },
+                          );
+
+                            
+
+                            
                           }
+                      else{
+                        if (int.parse(noOfDaysController.text) < available) {
+                          if (dropdownValue == 'Earned Leave') {
+                            if (startDate!.isBefore(
+                                DateTime.now().add(const Duration(days: 21)))) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text(
+                                      "Invalid Start Date",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                    content: const Text(
+                                        "To avail your earned leave, you have to apply before 21 days "),
+                                    actions: <Widget>[
+                                      ElevatedButton(
+                                        child: const Text("OK"),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else {
+                              createApplication();
+                            }
+                          } 
+                          else {
+                            createApplication();
+                          }
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text(
+                                  "Invalid no of Days",
+                                  style: TextStyle(
+                                      color: Color.fromARGB(255, 55, 145, 197)),
+                                ),
+                                content: const Text("not enough no of days"),
+                                actions: <Widget>[
+                                  ElevatedButton(
+                                    child: const Text("OK"),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         }
-                        {
-                          tryCreate();
-                        }
-                      },
+                      }}
                       //createApplication,
                     ),
                     // apply() async {
@@ -638,9 +706,6 @@ class _HomePage extends State<HomePage> {
   Future tryCreate() async {
     final snapshot = await FirebaseDatabase.instance.ref('employee').get();
 
-    String? key;
-    String ff;
-
     for (var element in snapshot.children) {
       if (element.child('email').value.toString() ==
           FirebaseAuth.instance.currentUser?.email) {
@@ -650,45 +715,13 @@ class _HomePage extends State<HomePage> {
       }
     }
     DatabaseReference dref = FirebaseDatabase.instance.ref('employee/$key');
+
     dref.onValue.listen((event) {
       ff = event.snapshot.child(dropdownValue).value.toString();
 
-      var available = int.parse(ff);
-      if (int.parse(noOfDaysController.text) > available) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              title: const Text(
-                "Alert!",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 39, 120, 185),
-                ),
-              ),
-              content: const Text("Not enough leave available"),
-              actions: <Widget>[
-                Center(
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15))),
-                    ),
-                    child: const Text("OK"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        createApplication();
-      }
+      available = int.parse(ff);
     });
+    return available;
   }
 
   Future createApplication() async {
